@@ -1,17 +1,20 @@
 #!/bin/bash
 
-# TODO:
-# Task 1: Main function to start the game
-# Task 2: function to draw the main game board with connection to main.
-# Task 3: Menu of game
+# TASK
+# Bash. Kółko i krzyżyk
+# W ramach pierwszego zadania proszę wykonać grę kółko i krzyżyk w Bashu, który:
+    # 3.0 - działa w trybie gry turowej ?,
+    # 4.0 - pozwala na zapis i odtwarzanie przerwanej gry (save game),
+    # 5.0 - pozwala na grę z komputerem.
 
-# current player (1-'X', 2-'O')
-# current_player=3-current_player
-#current_player = 1
+# TODO:
+# Task1: Add more deeper logic for computer move
+# Task2: Add the functionality to stop and save the game
 
 is_game_running=true
 user_choice=""
 computer_choice=""
+
 
 # declaration of board
 board=(" " " " " "
@@ -69,7 +72,7 @@ function player_move(){
             is_game_running=false
             break
         fi
-        if ! [[ $position =~ ^[0-9]$ ]]; then
+        if ! [[ $position =~ ^[0-8]$ ]]; then
             echo "Invalid position"
             continue
         fi
@@ -84,7 +87,7 @@ function player_move(){
     done
 }
 
-# computer move
+# computer move - TODO more than just empty
 function computer_move() { 
     #which cells are empy ?
     echo "Computer's move..."
@@ -99,6 +102,7 @@ function computer_move() {
     done
 }
 
+ 
 
 function update_board(){
     
@@ -116,16 +120,54 @@ function update_board(){
 
 
 function game_status() {
-    #for i in ${board[@]}; do
     echo "Checking game status..."
-    for i in "${!board[@]}"; do
-        if [[ ${board[$i]} == " " ]]; then
-            return
+    if horizontal_win || vertical_win || diagonal_win || check_draw; then 
+        is_game_running=false
+        finish_game_menu
+    fi 
+}
+
+#${board[$row]} | ${board[$row+1]} | ${board[$row+2]} to receive the rows
+function horizontal_win(){
+    for row in 0 3 6; do 
+        row_sum=0
+        if [[ ${board[$row]} != " " && ${board[$row]} == ${board[$row+1]} && ${board[row]} == ${board[$row+2]} ]]; then
+            echo "${board[$row]} wins horizontally"
+            return 0 # return 0 seems to be win
         fi
     done
-    is_game_running=false
-    echo "We have the winner, so the game is stopped"
-    finish_game_menu
+    return 1 # return 1 seems to break for now
+}
+#${board[$row]} | ${board[$row+3]} | ${board[$row+6]} - to receive the columns
+function vertical_win(){
+    for col in 0 1 2; do 
+        if [[ ${board[$col]} != " " && ${board[$col]} == ${board[$col+3]} && ${board[$col]} == ${board[$col+6]} ]]; then 
+            echo "${board[$col]} wins vertically"
+            return 0
+        fi 
+    done
+    return 1
+
+}
+function diagonal_win(){
+    if [[ ${board[0]} != " " && ${board[0]} == ${board[4]} && ${board[0]} == ${board[8]} ]]; then 
+        echo "${board[0]} diagonally won !"
+        return 0
+    elif [[ ${board[2]} != " " && ${board[2]} == ${board[4]} && ${board[2]} == ${board[6]} ]]; then
+        echo "${board[2]} diagonally won !" 
+        return 0
+    fi 
+    return 1
+}
+function check_draw() {
+    for i in "${!board[@]}"; do
+        if [[ ${board[$i]} == " " ]]; then
+            return 1
+        fi
+    done
+    echo "DRAW !"
+    return 0
+
 }
 
 # function to play one more time after finish the game
